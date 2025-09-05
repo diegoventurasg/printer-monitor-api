@@ -39,12 +39,25 @@ def _fetch_with_curl(url: str, timeout: int = 8) -> str:
     except subprocess.TimeoutExpired as e:
         raise Exception(f"curl expirou: {e}") from e
     
-def check_printer_toners(ip):
+def get_printer_page_source(ip):
     try:
         url = f"https://{ip}/hp/device/DeviceStatus/Index"
         html = _fetch_with_curl(url)
         soup = BeautifulSoup(html, "html.parser")
-
+        return soup
+    except Exception as e:
+        print(f"Erro ao acessar impressora {ip}: {e}")
+        return None
+    
+def check_printer_status(soup: BeautifulSoup):
+    span = soup.find("span", {"id": "MachineStatus"})
+    status = "Indisponível"
+    if span:
+        status = span.get_text(strip=True)
+    return status
+    
+def check_printer_toners(soup: BeautifulSoup):
+    try:
         # Procura todos os spans de interesse
         found = {}
         for color, span_id in CORES.items():
@@ -67,7 +80,7 @@ def check_printer_toners(ip):
             niveis["Preto"] = found.get("SupplyPLR0")   
 
     except Exception as e:
-        print(f"Erro ao acessar impressora {ip}: {e}")
+        print(f"Erro ao acessar impressora: {e}")
         return None
 
     return niveis

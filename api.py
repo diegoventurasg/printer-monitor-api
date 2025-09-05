@@ -1,8 +1,10 @@
 from flask import Flask, jsonify, abort
+from flask_cors import CORS
 from printers import PRINTERS
-from toner_monitor import check_printer_toners
+from toner_monitor import check_printer_status, check_printer_toners, get_printer_page_source
 
 app = Flask(__name__)
+CORS(app) 
 
 @app.route("/printers", methods=["GET"])
 def list_printers():
@@ -19,7 +21,9 @@ def printer_status(printer_id):
 
     niveis = {}
     try:
-        niveis = check_printer_toners(printer["ip"])
+        page_source = get_printer_page_source(printer["ip"])
+        status = check_printer_status(page_source)
+        niveis = check_printer_toners(page_source)
     except Exception as e:
         return jsonify({
             "error": "Internal Server Error",
@@ -47,6 +51,7 @@ def printer_status(printer_id):
         "ip": printer["ip"],
         "local": printer["local"],
         "status": "online" if niveis is not None else "offline",
+        "message": status,
         "alertas": alertas,
         "color": printer["color"],
         "toners": toners
@@ -54,4 +59,4 @@ def printer_status(printer_id):
     return jsonify(response), 200
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8081)
