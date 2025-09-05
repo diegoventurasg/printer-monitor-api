@@ -1,7 +1,7 @@
-from flask import Flask, jsonify, abort
+from flask import Flask, jsonify
 from flask_cors import CORS
 from printers import PRINTERS
-from toner_monitor import check_printer_status, check_printer_toners, get_printer_page_source
+from printer_monitor import check_printer_status, check_printer_toners, get_printer_page_source
 
 app = Flask(__name__)
 CORS(app) 
