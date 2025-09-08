@@ -9,8 +9,9 @@ API simples em **Python Flask** para listar impressoras do INPE via rede e obter
 ```
 .
 ├── api.py              # Arquivo principal da API Flask
+├── printer_email.py    # Funções para envio de alerta via e-mail
+├── printer_monitor.py  # Funções para acessar impressoras e obter informações
 ├── printers.py         # Lista de impressoras cadastradas
-├── toner_monitor.py    # Funções para acessar impressoras e obter informações
 ├── requirements.txt    # Dependências do projeto
 └── README.md           # Este arquivo 😄
 ```
@@ -32,10 +33,13 @@ beautifulsoup4==4.13.4
 blinker==1.9.0
 click==8.2.1
 colorama==0.4.6
+dotenv==0.9.9
 Flask==3.1.1
+flask-cors==6.0.1
 itsdangerous==2.2.0
 Jinja2==3.1.6
 MarkupSafe==3.0.2
+python-dotenv==1.1.1
 soupsieve==2.7
 typing_extensions==4.14.1
 Werkzeug==3.1.3
@@ -99,8 +103,10 @@ GET /printer/<id>
     "ip": "190.168.0.10",
     "modelo": "HP Printer",
     "color": true,
+    "status": "online",
+    "message": "Consumo reduzido ativado",
     "toners": {
-        "preto": 80,
+        "preto": 10,
         "ciano": 60,
         "magenta": 55,
         "amarelo": 70
@@ -154,7 +160,7 @@ flowchart TD
     A -->|GET /printer/<id>| B
 
     B -->|Importa lista| C[printers.py]
-    B -->|Chama função| D[toner_monitor.py]
+    B -->|Chama função| D[printer_monitor.py]
 
     D -->|Acessa impressora via IP| E[(Impressora Física)]
     E -->|Retorna status toner| D
@@ -170,7 +176,7 @@ flowchart TD
 3. Para `/printers`, ele lê diretamente o array `PRINTERS` do `printers.py`.  
 4. Para `/printer/<id>`, ele:
    - Busca a impressora na lista (`printers.py`).  
-   - Usa `toner_monitor.py` para coletar informações detalhadas.  
+   - Usa `printer_monitor.py` para coletar informações detalhadas.  
    - Consulta a impressora pelo IP e processa os dados.  
 5. A API retorna a resposta em JSON para o cliente.  
 
